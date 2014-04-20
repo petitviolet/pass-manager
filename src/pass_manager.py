@@ -14,7 +14,7 @@ import getpass
 
 class PasswordManager(object):
     ''' コマンドラインでのパスワードマネージャー '''
-    PASS_FILE = '{home}/.pypass.db'.format(home=os.environ['HOME'])
+    PASS_FILE = '{home}/.pass-manager.db'.format(home=os.environ['HOME'])
 
     def __init__(self):
         '''PASS_FILEにファイルが無ければ新規作成
