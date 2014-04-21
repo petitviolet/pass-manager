@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pass-manager',
-    version='1.0.1',
+    version='1.0.3',
     author='petitviolet',
     author_email='violethero0820@gmail.com',
     packages=find_packages(),
