@@ -4,12 +4,14 @@
 '''
 import hashlib
 import cPickle as pickle
-from collections import defaultdict
 import os
 from argparse import ArgumentParser
-from random import randint
+from random import randint, choice
 import subprocess
 import getpass
+from encrypter import Encrypter
+from collections import defaultdict
+import json
 
 class PasswordManager(object):
     ''' Simple CLI Password Manager Tool developed by python'''
@@ -18,33 +20,47 @@ class PasswordManager(object):
     def __init__(self):
         ''' if not db file, create new db file
         '''
+        # set master password
+        self.encrypter = Encrypter()
         if os.path.exists(self.PASS_FILE):
             try:
                 with open(self.PASS_FILE, 'r') as f:
-                    self.passwds = pickle.load(f)
-            except Exception, e:
+                    file_content = pickle.load(f)
+                    # for compatibility
+                    if type(file_content) in (dict, defaultdict):
+                        # old version
+                        self.passwds = file_content
+                    elif type(file_content) == str:
+                        # new version
+                        decrypted_file_content = \
+                                self.encrypter.decrypt(file_content)
+                        self.passwds = json.loads(decrypted_file_content)
+                    else:
+                        raise Exception('Unknown error...')
+            except Exception as e:
                 print 'failed loading db file... ', e
                 os.remove(self.PASS_FILE)
                 raise Exception('try it again.')
             master = self.passwds['master']
         else:
-            self.passwds = defaultdict(str)
+            self.passwds = {}
             master = getpass.getpass(\
                 'This is your first time. Please input your master password => ')
             self.passwds['master'] = master
             self._save_db()
-
-        # set master password
         self.sha = hashlib.sha256(master)
+
 
     def _save_db(self):
         ''' save or update db file
         '''
         try:
             with open(self.PASS_FILE, 'w') as f:
-                pickle.dump(self.passwds, f)
+                json_passwds = json.dumps(self.passwds)
+                encrypted_file_content = self.encrypter.encrypt(json_passwds)
+                pickle.dump(encrypted_file_content, f)
         except Exception as e:
-            raise Exception('failed saving db file :{0}'.format(e=e))
+            raise Exception('failed saving db file :{e}'.format(e=e))
 
     def setpb_data(self, data):
         ''' save password into clipboard
@@ -64,9 +80,15 @@ class PasswordManager(object):
         ''' strengthen generated password
         '''
         strengthened_digest = []
+        signs = ['#', '$', '-', '=', '?', '@', '[', ']', '_']
         for c in digest:
-            if c.isalpha() and randint(1, 10) % 2:
+            odd = randint(1, 10) % 2 == 1
+            if c.isalpha() and odd:
                 c = c.upper()
+            elif c.isdigit() and not odd:
+                sign = choice(signs)
+                c = sign
+
             strengthened_digest.append(c)
         return ''.join(strengthened_digest)
 

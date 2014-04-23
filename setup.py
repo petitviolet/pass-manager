@@ -3,11 +3,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='pass-manager',
-    version='1.0.3',
+    version='1.1.0',
     author='petitviolet',
     author_email='violethero0820@gmail.com',
     packages=find_packages(),
-    install_requires=[],
     description = 'Simple CLI Password Manager',
     long_description = 'Please show help (pass-manager -h)',
     url = 'https://github.com/petitviolet/pass-manager',
@@ -19,6 +18,7 @@ setup(
         'console_scripts': 'pass-manager = src.pass_manager:main'
     },
     zip_safe=False,
+    install_requires = ['crypto'],
     classifiers=[
           'Environment :: Console',
           'Intended Audience :: Developers',
