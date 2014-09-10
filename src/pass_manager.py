@@ -46,9 +46,11 @@ class PasswordManager(object):
             self.passwds = {}
             master = getpass.getpass(\
                 'This is your first time. Please input your master password => ')
+            master = hashlib.sha256(master).hexdigest()
             self.passwds['master'] = master
             self._save_db()
         self.sha = hashlib.sha256(master)
+        # self.sha = master_sha
 
 
     def _save_db(self):
@@ -110,6 +112,12 @@ class PasswordManager(object):
         '''
         valid_master = getpass.getpass(\
                 'Please input master password => ')
+        if valid_master == self.passwds['master']:
+            # for secure, not save raw master password
+            master = hashlib.sha256(self.passwds['master']).hexdigest()
+            self.passwds['master'] = master
+            self._save_db()
+        valid_master = hashlib.sha256(valid_master).hexdigest()
         if valid_master == self.passwds['master']:
             return True
         else:
